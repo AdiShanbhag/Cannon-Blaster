@@ -14,6 +14,10 @@ public class Player : MonoBehaviour
     public GameObject readyPopUpPanel;
     
     private GameManager gameManager;
+
+    // Swipe detection variables
+    private Vector2 lastTouchPosition;
+    
     void Start()
     {
         this.isPlayerControlled = false;
@@ -52,11 +56,45 @@ public class Player : MonoBehaviour
 
     private void DetectPlayerInput()
     {
-        if(Input.GetMouseButtonDown(0) || Input.touchCount > 0 || Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
+        if(Input.touchCount > 0)
+        {
+            Touch touch = Input.GetTouch(0);
+
+            switch(touch.phase)
+            {
+                case TouchPhase.Began:
+                    lastTouchPosition = touch.position;
+                    break;
+
+                case TouchPhase.Moved:
+                    Vector2 deltaPosition = touch.position - lastTouchPosition;
+                    MovePlayer(deltaPosition.x);
+                    lastTouchPosition = touch.position;
+                    break;
+
+                case TouchPhase.Ended:
+                    isPlayerControlled = true;
+                    readyPopUpPanel.SetActive(false);
+                    break;
+            }
+        }
+        //Backup for testing on PC
+        if(Input.GetMouseButtonDown(0)|| Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.D))
         {
             this.isPlayerControlled = true;
             this.readyPopUpPanel.SetActive(false);
         }
+    }
+
+    private void MovePlayer(float deltaX)
+    {
+        // Move the player based on the delta from touch input
+        Vector3 newPosition = this.transform.position + new Vector3(deltaX * playerControlSpeed * Time.deltaTime, 0, 0);
+
+        // Clamp the player's position to the specified limits
+        newPosition.x = Mathf.Clamp(newPosition.x, leftLimit, rightLimit);
+
+        this.transform.position = newPosition;
     }
 
     private void PlayerControlledMovement()

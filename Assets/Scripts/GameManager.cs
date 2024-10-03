@@ -87,4 +87,9 @@ public class GameManager : MonoBehaviour
             this.isGamePaused = false;
         }
     }
+
+    public void OnClickQuit()
+    {
+        Application.Quit();
+    }
 }
